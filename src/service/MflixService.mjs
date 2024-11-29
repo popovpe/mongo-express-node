@@ -1,5 +1,6 @@
 import MongoConnection from '../mongo/MongoConnection.mjs'
 import { ObjectId } from 'mongodb';
+import getError from '../errors/error.mjs';
 export default class MflixService {
     #moviesCollection;
     #commentsCollection;
@@ -17,13 +18,17 @@ export default class MflixService {
 
     async addComment(commentDto) {
         const commentDb = this.#toComment(commentDto);
+        const movieId = await this.#moviesCollection.findOne({_id: commentDb.movie_id});
+        if( !movieId ) {
+            throw getError(424, "Unable to add a comment for unexisting movie");
+        }
         const result = await this.#commentsCollection.insertOne(commentDb);
         commentDb._id = result.insertedId;
         return commentDb;
     }
 
     async updateComment(updateInfo) {
-        return await this.#commentsCollection.updateOne({
+        const result = await this.#commentsCollection.updateOne({
             _id: ObjectId.createFromHexString(updateInfo.commentId)
         },
             {
@@ -32,6 +37,10 @@ export default class MflixService {
                     text: updateInfo.text
                 }
             });
+        if( !result.modifiedCount ) {
+            throw  getError(404, "comment not found");
+        }
+        return result;
     }
 
     async deleteComment(id) {
@@ -39,13 +48,20 @@ export default class MflixService {
         const result = await this.#commentsCollection.deleteOne({
             _id: commentId
         });
+        if(!result.deletedCount) {
+            throw  getError(404, "comment not found");
+        }
         return result;
     }
 
     async getComment(id) {
-        return await this.#commentsCollection.findOne({
+        const result = await this.#commentsCollection.findOne({
             _id: ObjectId.createFromHexString(id)
         });
+        if (!result) {
+            throw  getError(404, "comment not found");
+        }
+        return result;
     }
 
     async getRatedMovies( queryDto ) {
