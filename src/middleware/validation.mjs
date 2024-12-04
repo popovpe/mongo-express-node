@@ -24,15 +24,29 @@ const getRatedMoviesReqSchema = Joi.object({
     acter: Joi.string(),
     amount: Joi.number().integer().sign("positive").max(100).required(),
 });
+
+const addAccountSchema = Joi.object({
+    username: Joi.string().min(4).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(8).required()
+
+})
+
+const changePasswoordReqSchema = Joi.object({
+    username: Joi.string().min(4).required(),
+    password: Joi.string().min(8).required()
+})
+
 const objectIdSchema = Joi.string().hex().length(24).label('objectId');
 
 function validate(schema, pathFromRequest ) {
     return (req, res, next) => {
         const { error } = schema.validate(_.get(req, pathFromRequest));
         if (error) {
-            next(getError(400, error.details[0].message))
+            throw getError(400, error.details[0].message)
         }
+        req.validated = true;
         next();
     }
 }
-export {  addCommentReqSchema, validate, objectIdSchema, getRatedMoviesReqSchema, updateCommentReqSchema };
+export {  addCommentReqSchema, validate, objectIdSchema, getRatedMoviesReqSchema, updateCommentReqSchema , addAccountSchema, changePasswoordReqSchema};
