@@ -1,13 +1,33 @@
 import express from 'express'
 import asyncHandler from 'express-async-handler';
 import MflixService from "../service/MflixService.mjs";
-import routeHandler from '../middleware/routeHandler.mjs'
+import routeHandler from '../middleware/routeHandler.mjs';
+import accountsService from '../service/AccountsService.mjs';
+import getError from '../errors/error.mjs';
+
 const mflix_route = express.Router();
+const PER_MINUTE_REQ_LIMITATION = 5;
+const ERROR_LIMIT_EXCEEDED = "limit of requests per minute for USER exceeded";
 
 import { addCommentReqSchema, objectIdSchema, getRatedMoviesReqSchema, validate, updateCommentReqSchema } from '../middleware/validation.mjs';
+import { auth } from '../middleware/authentication.mjs';
 
 const mflixService = new MflixService(process.env.MONGO_URI, process.env.DB_NAME, process.env.MOVIES_COLLECTION, process.env.COMMENTS_COLLECTION);
 
+async function authRule(req) {
+    let isAllowed = false;
+    const role = req?.role ?? 'USER';
+    if (role === 'PREMIUM_USER') {
+        isAllowed = true;
+    }
+    if (role == 'USER') {
+        const requestsForLastPeriod = await accountsService.addReqAndGetReqQuantityForPeriod(req.user, 60_000);
+        isAllowed = requestsForLastPeriod <= PER_MINUTE_REQ_LIMITATION
+    }
+    return isAllowed;
+}
+
+mflix_route.use(auth(authRule, getError(403, ERROR_LIMIT_EXCEEDED)));
 
 mflix_route.post("/comments", [
     validate(addCommentReqSchema, "body"),
