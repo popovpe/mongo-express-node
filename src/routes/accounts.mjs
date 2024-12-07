@@ -37,7 +37,7 @@ accounts_route.put("/account/role",
         getAccount(id) {
             const _id = process.env?.SET_ROLE_USERNAME;
             if (_id === id) {
-                return { _id, password: process.env?.SET_ROLE_PASSWORD, _encryptedPassword: false }
+                return { _id, password: process.env?.SET_ROLE_PASSWORD, _plainTextPassword: true }
             }
         }
     }),

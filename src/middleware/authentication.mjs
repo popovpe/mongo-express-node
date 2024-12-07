@@ -38,7 +38,7 @@ async function basicAuth(authHeader, req, accountingService) {
         const account = await accountingService.getAccount(userPasswordTokens[0]);
         if (account) {
             let passwordIsCorrect = false;
-            if (account?._encryptedPassword === false && userPasswordTokens[1] === account.password) {
+            if (account?._plainTextPassword === true && userPasswordTokens[1] === account.password) {
                 passwordIsCorrect = true;
             } else if ( await bcrypt.compare(userPasswordTokens[1], account.password) ) {
                 passwordIsCorrect = true;
