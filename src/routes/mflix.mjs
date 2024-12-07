@@ -5,10 +5,6 @@ import accountsService from '../service/AccountsService.mjs';
 import getError from '../errors/error.mjs';
 
 const mflix_route = express.Router();
-const PER_MINUTE_REQ_LIMITATION = 5;
-const TIME_INTERVAL_FOR_REQUEST_QTY_CHECKING = 60;
-const ERROR_LIMIT_EXCEEDED = `limit of requests per ${TIME_INTERVAL_FOR_REQUEST_QTY_CHECKING} sec. for USER exceeded`;
-
 
 import { addCommentReqSchema, objectIdSchema, getRatedMoviesReqSchema, validate, updateCommentReqSchema } from '../middleware/validation.mjs';
 import { auth } from '../middleware/authentication.mjs';
