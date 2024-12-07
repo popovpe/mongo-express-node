@@ -7,7 +7,7 @@ import getError from '../errors/error.mjs';
 const mflix_route = express.Router();
 const PER_MINUTE_REQ_LIMITATION = 5;
 const TIME_INTERVAL_FOR_REQUEST_QTY_CHECKING = 60;
-const ERROR_LIMIT_EXCEEDED = `limit of requests per ${TIME_INTERVAL_FOR_REQUEST_QTY_CHECKING} sec. for USER exceeded`;
+const ERROR_LIMIT_EXCEEDED_MSG= `limit of requests per ${TIME_INTERVAL_FOR_REQUEST_QTY_CHECKING} sec. for USER exceeded`;
 
 
 import { addCommentReqSchema, objectIdSchema, getRatedMoviesReqSchema, validate, updateCommentReqSchema } from '../middleware/validation.mjs';
@@ -28,7 +28,7 @@ async function authRule(req) {
     return isAllowed;
 }
 
-mflix_route.use(auth(authRule, getError(403, ERROR_LIMIT_EXCEEDED)));
+mflix_route.use(auth(authRule, getError(403, ERROR_LIMIT_EXCEEDED_MSG)));
 
 mflix_route.post("/comments", [
     validate(addCommentReqSchema, "body"),
