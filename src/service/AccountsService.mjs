@@ -6,11 +6,36 @@ const USERNAME_NOT_FOUND = "Username not found";
 const DB_ERROR = "DB error occured";
 const ACCOUNTS_COLLECTION_NAME = "accounts";
 
-export default class AccountsService {
+class AccountsService {
     #accounts;
 
     constructor(uri, dbName) {
-        this.#accounts = new MongoConnection(uri, dbName).getCollection( ACCOUNTS_COLLECTION_NAME );
+        this.#accounts = new MongoConnection(uri, dbName).getCollection(ACCOUNTS_COLLECTION_NAME);
+    }
+
+    async addReqAndGetReqQuantityForPeriod(username, period) {
+        const currentTimeStamp = new Date().valueOf();
+        let validReq = [currentTimeStamp];
+        const account = await this.getAccount(username);
+        const requests = account?.requests;
+        if (requests) {
+            const requestsToRemain = requests.filter(e => currentTimeStamp - e < period);
+            validReq = validReq.concat(requestsToRemain);
+        }
+        this.updateRequests(username, validReq)
+        return validReq.length;
+    }
+
+    async updateRequests(username, requests) {
+        let result;
+        try {
+            result = await this.#accounts.updateOne({ _id: username }, { $set: { requests } });
+        } catch (error) {
+            throw getError(500, DB_ERROR);
+        }
+        if (!result.modifiedCount) {
+            throw getError(404, USERNAME_NOT_FOUND);
+        }
     }
 
     async insertAccount(account) {
@@ -26,6 +51,19 @@ export default class AccountsService {
         }
 
     }
+
+    async setRole({ username, role }) {
+        let result;
+        try {
+            result = await this.#accounts.updateOne({ _id: username }, { $set: { role: role } });
+        } catch (error) {
+            throw getError(500, DB_ERROR);
+        }
+        if (!result.matchedCount) {
+            throw getError(404, USERNAME_NOT_FOUND);
+        }
+    }
+
     async updatePassword({ username, password }) {
         const passwordHash = bcrypt.hashSync(password, 10);
         let result;
@@ -59,7 +97,7 @@ export default class AccountsService {
                 throw getError(404, USERNAME_NOT_FOUND);
             }
         } catch (e) {
-            if (e?.code === 404 ) {
+            if (e?.code === 404) {
                 throw e;
             } else {
                 throw getError(500, DB_ERROR)
@@ -74,3 +112,4 @@ export default class AccountsService {
     }
 
 }
+export default new AccountsService(process.env.MONGO_URI, process.env.DB_NAME);

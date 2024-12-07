@@ -12,12 +12,12 @@ const addCommentReqSchema = Joi.object({
 const updateCommentReqSchema = Joi.object({
     commentId: Joi.string().hex().length(24).required(),
     text: Joi.string().required()
- 
- })
 
-    //TODO find most imdb rated movies
-    // req.body {"year":<number>(optional), "genre":<string>(optional),
-    // "acter":<string-regex>(optional), "amount":<number>(mandatary)}
+})
+
+//TODO find most imdb rated movies
+// req.body {"year":<number>(optional), "genre":<string>(optional),
+// "acter":<string-regex>(optional), "amount":<number>(mandatary)}
 const getRatedMoviesReqSchema = Joi.object({
     year: Joi.number().integer().greater(1887),
     genre: Joi.string(),
@@ -32,14 +32,19 @@ const addAccountSchema = Joi.object({
 
 })
 
-const changePasswoordReqSchema = Joi.object({
+const changePasswordReqSchema = Joi.object({
     username: Joi.string().min(4).required(),
     password: Joi.string().min(8).required()
 })
 
 const objectIdSchema = Joi.string().hex().length(24).label('objectId');
 
-function validate(schema, pathFromRequest ) {
+const setRoleRequest = Joi.object({
+    username: Joi.string().min(4).required(),
+    role: Joi.string().valid("USER", "PREMIUM_USER", "ADMIN").required()
+})
+
+function validate(schema, pathFromRequest) {
     return (req, res, next) => {
         const { error } = schema.validate(_.get(req, pathFromRequest));
         if (error) {
@@ -49,4 +54,4 @@ function validate(schema, pathFromRequest ) {
         next();
     }
 }
-export {  addCommentReqSchema, validate, objectIdSchema, getRatedMoviesReqSchema, updateCommentReqSchema , addAccountSchema, changePasswoordReqSchema};
+export { addCommentReqSchema, validate, setRoleRequest, objectIdSchema, getRatedMoviesReqSchema, updateCommentReqSchema, addAccountSchema, changePasswordReqSchema };

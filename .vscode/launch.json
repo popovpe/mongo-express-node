@@ -12,7 +12,10 @@
                 "MONGO_URI": "mongodb+srv://root:12345.com@cluster0.6g6zm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
                 "DB_NAME": "sample_mflix",
                 "MOVIES_COLLECTION": "movies",
-                "COMMENTS_COLLECTION": "comments"
+                "COMMENTS_COLLECTION": "comments",
+                "SET_ROLE_USERNAME": "rolesetter",
+                "SET_ROLE_PASSWORD": "password",
+
             },
             "skipFiles": [
                 "<node_internals>/**"
